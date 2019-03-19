@@ -1,0 +1,590 @@
+
+
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico" />
+    <link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-f2d2b6d2c61838f7e76325261b7195c27224080bc099486ddd6dccb469b8e8e6.svg" color="#111" />
+    <title>Quran Audio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel='stylesheet prefetch' href='https://cdn.plyr.io/2.0.13/plyr.css'>
+
+    <style>
+        /* Font Family
+        ==========================================
+        apis
+        1. //quranicaudio.com/api/qaris
+        2. //download.quranicaudio.com/quran/abdurrahmaan_as-sudays/004.mp3
+        3. /quran/sa3ood_al-shuraym/002.mp3
+        ======== */
+
+        @import url('https://fonts.googleapis.com/css?family=Oxygen:300,400,700');
+
+
+        /* Global Styles
+        ================================================== */
+        .title {
+            color: rgba(38,108,214, 1);
+            background:#fff;
+            padding: 20px;
+        }
+        body.noscroll {
+            overflow: hidden;
+        }
+
+        html,body {
+            -webkit-font-smoothing:antialiased;
+            -webkit-text-size-adjust:100%;
+            background-color:#0665a2;
+            color:#fff;
+            font-size:105%;
+            font-family:"Oxygen", HelveticaNeue, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-weight:300;
+            letter-spacing:.025rem;
+            line-height:1.618;
+            padding: 1.5rem 0;
+        }
+
+        * {
+            -webkit-tap-highlight-color:rgba(0,0,0,0);
+            -webkit-tap-highlight-color:transparent;
+        }
+
+
+        /* Setup
+        ================================================== */
+        .container { position:relative; margin:0 auto; max-width:800px; width:100%; }
+        .column { width:inherit; }
+
+
+        /* Typography / Links
+        ================================================== */
+        p { color:#fff; display:block; font-size:.9rem; font-weight:400; margin:0 0 2px; }
+        a,a:visited {
+            color:#8cc3e6;
+            outline:0;
+            text-decoration: none;
+            transition: all .3s;
+        }
+        a:hover,a:focus { color:#bbdef5; }
+        p a,p a:visited { line-height:inherit; }
+
+
+        /* Misc.
+        ================================================== */
+        .add-bottom { margin-bottom:2rem !important; }
+        .left { float:left; }
+        .right { float:right; }
+        .center { text-align:center; }
+
+
+        /* Audio Player Styles
+        ================================================== */
+        audio {
+            margin:0 15px 0 14px;
+            width:670px;
+        }
+
+        #mainwrap {}
+
+        #audiowrap,
+        #plwrap {
+            margin:0 auto;
+        }
+
+        #tracks {
+            position:relative;
+            text-align:center;
+        }
+
+        #nowPlay {
+            display:inline;
+        }
+
+        #npAction {
+            padding:21px;
+            position:absolute;
+        }
+
+        #npTitle {
+            padding:21px;
+        }
+
+        #qrList li,
+        #plList li {
+            cursor:pointer;
+            display:block;
+            margin:0;
+            padding:21px 0;
+            transition: all .3s;
+        }
+
+        #qrList li:hover,
+        #plList li:hover {
+            background-color:rgba(0,0,0,.1);
+            padding-left: 10px;
+        }
+
+        .plItem {
+            position:relative;
+        }
+
+        .plTitle {
+            left:50px;
+            overflow:hidden;
+            position:absolute;
+            right:65px;
+            text-overflow:ellipsis;
+            top:0;
+            white-space:nowrap;
+        }
+
+        .plNum {
+            padding-left:21px;
+            width:25px;
+        }
+
+        .plLength {
+            padding-left:21px;
+            position:absolute;
+            right:21px;
+            top:0;
+        }
+
+        .plSel,
+        .plSel:hover {
+            background-color:rgba(0,0,0,.1);
+            color:#fff;
+            cursor:default !important;
+        }
+
+        a[id^="btn"] {
+            border-radius:3px;
+            color:#fff;
+            cursor:pointer;
+            display:inline-block;
+            font-size:2rem;
+            height:35px;
+            line-height:.8;
+            margin:0 20px 20px;
+            padding:5px 10px;
+            text-decoration:none;
+            transition:background .3s ease;
+            width:35px;
+        }
+
+        a[id^="btn"]:last-child {
+            margin-left:-4px;
+        }
+
+        a[id^="btn"]:hover,
+        a[id^="btn"]:active {
+            background-color:rgba(0,0,0,.1);
+            color:#fff;
+        }
+
+        a[id^="btn"]::-moz-focus-inner {
+            border:0;
+            padding:0;
+        }
+
+
+        /* Plyr Overrides
+        ================================================== */
+
+        .plyr--audio .plyr__controls {
+            background-color:transparent;
+            border:none;
+            color:#fff;
+            padding:20px 20px 20px 13px;
+            width:100%;
+        }
+
+        .plyr--audio .plyr__controls button.tab-focus:focus,
+        .plyr--audio .plyr__controls button:hover,
+        .plyr__play-large {
+            background:rgba(0,0,0,.1);
+        }
+
+        .plyr__progress--played, .plyr__volume--display {
+            color:rgba(0,0,0,.1);
+        }
+
+        .plyr--audio .plyr__progress--buffer,
+        .plyr--audio .plyr__volume--display {
+            background:rgba(0,0,0,.1);
+        }
+
+        .plyr--audio .plyr__progress--buffer {
+            color:rgba(0,0,0,.1);
+        }
+
+
+        /* Media Queries
+        ================================================== */
+
+        @media only screen and (max-width:850px) {
+            #nowPlay { display:none; }
+        }
+
+
+
+        /* <-- hamburger menu --> */
+        #nav-icon1, #nav-icon2, #nav-icon3, #nav-icon4 {
+            width: 60px;
+            height: 45px;
+            position: relative;
+            margin: 20px auto;
+            -webkit-transform: rotate(0deg);
+            -moz-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            transform: rotate(0deg);
+            -webkit-transition: .5s ease-in-out;
+            -moz-transition: .5s ease-in-out;
+            -o-transition: .5s ease-in-out;
+            transition: .5s ease-in-out;
+            cursor: pointer;
+        }
+
+        #nav-icon2 {
+        }
+
+        #nav-icon2 span {
+            display: block;
+            position: absolute;
+            height: 5px;
+            width: 50%;
+            background: #7ee;
+            opacity: 1;
+            -webkit-transform: rotate(0deg);
+            -moz-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            transform: rotate(0deg);
+            -webkit-transition: .25s ease-in-out;
+            -moz-transition: .25s ease-in-out;
+            -o-transition: .25s ease-in-out;
+            transition: .25s ease-in-out;
+        }
+
+        #nav-icon2 span:nth-child(even) {
+            left: 50%;
+            border-radius: 0 9px 9px 0;
+        }
+
+        #nav-icon2 span:nth-child(odd) {
+            left:0px;
+            border-radius: 9px 0 0 9px;
+        }
+
+        #nav-icon2 span:nth-child(1), #nav-icon2 span:nth-child(2) {
+            top: 0px;
+        }
+
+        #nav-icon2 span:nth-child(3), #nav-icon2 span:nth-child(4) {
+            top: 18px;
+        }
+
+        #nav-icon2 span:nth-child(5), #nav-icon2 span:nth-child(6) {
+            top: 36px;
+        }
+
+        #nav-icon2.open span:nth-child(1),#nav-icon2.open span:nth-child(6) {
+            -webkit-transform: rotate(45deg);
+            -moz-transform: rotate(45deg);
+            -o-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+
+        #nav-icon2.open span:nth-child(2),#nav-icon2.open span:nth-child(5) {
+            -webkit-transform: rotate(-45deg);
+            -moz-transform: rotate(-45deg);
+            -o-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+        }
+
+        #nav-icon2.open span:nth-child(1) {
+            left: 5px;
+            top: 7px;
+        }
+
+        #nav-icon2.open span:nth-child(2) {
+            left: calc(50% - 5px);
+            top: 7px;
+        }
+
+        #nav-icon2.open span:nth-child(3) {
+            left: -50%;
+            opacity: 0;
+        }
+
+        #nav-icon2.open span:nth-child(4) {
+            left: 100%;
+            opacity: 0;
+        }
+
+        #nav-icon2.open span:nth-child(5) {
+            left: 5px;
+            top: 29px;
+        }
+
+        #nav-icon2.open span:nth-child(6) {
+            left: calc(50% - 5px);
+            top: 29px;
+        }
+
+
+
+        /*  OVERLAY */
+        .litebox {
+            /*background-color: rgb(37, 149, 255);*/
+            position: absolute;
+            width: 90%;
+            height: 93%;
+            left: 5%;
+            top: -45%;
+            background-color: #4865a9;
+            z-index: 5;
+            transition: all .35s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .litebox.opened {
+            top: 5%;
+            opacity: 1;
+            visibility: visible;
+            overflow-y: scroll;
+        }
+
+
+        .litebox__loader {
+            border: .3rem solid #555;
+            border-top: .3rem solid #CCC;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            animation: spin 1.5s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            visibility: hidden;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src='https://hamzeen.github.io/js/jquery-1.8.3.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/html5media/1.1.8/html5media.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/plyr/2.0.18/plyr.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+
+
+
+    <script >
+        jQuery(document).ready(function() {
+
+            var qari = 'abdurrahmaan_as-sudays'
+            var supportsAudio = !!document.createElement('audio').canPlayType;
+
+            if (supportsAudio) {
+                var index = 0,
+                    playing = false,
+                    mediaPath = 'https://download.quranicaudio.com/quran/' + qari + '/',
+                    extension = '',
+                    qaris = [{
+                        "name": "abdurrahmaan_as-sudays"
+                    },{
+                        "name": "sa3ood_al-shuraym"
+                    }],
+                    tracks = [{
+                        "track": 1,
+                        "name": "Surat Al-Fatihah",
+                        "duration": "0:40",
+                        "file": "001"
+                    }, {
+                        "track": 2,
+                        "name": "Surat Al-Baqarah",
+                        "duration": "1:39:00",
+                        "file": "002"
+                    }, {
+                        "track": 3,
+                        "name": "Surat Ali 'Imran",
+                        "duration": "48:01",
+                        "file": "003"
+                    }, {
+                        "track": 4,
+                        "name": "Surat An-Nisa",
+                        "duration": "1:00:45",
+                        "file": "004"
+                    }],
+                    buildPlaylist = $(tracks).each(function(key, value) {
+                        var trackNumber = value.track,
+                            trackName = value.name,
+                            trackDuration = value.duration;
+                        if (trackNumber.toString().length === 1) {
+                            trackNumber = '0' + trackNumber;
+                        }
+                        $('#plList').append('<li><div class="plItem"><span class="plNum">' + trackNumber + '.</span><span class="plTitle">' + trackName + '</span><span class="plLength">' + trackDuration + '</span></div></li>');
+                    }),
+                    trackCount = tracks.length,
+                    npAction = $('#npAction'),
+                    npTitle = $('#npTitle'),
+                    audio = $('#audio1').on('play', function () {
+                        playing = true;
+                        npAction.text('Now Playing...');
+                    }).on('pause', function () {
+                        playing = false;
+                        npAction.text('Paused...');
+                    }).on('ended', function () {
+                        npAction.text('Paused...');
+                        if ((index + 1) < trackCount) {
+                            index++;
+                            loadTrack(index);
+                            audio.play();
+                        } else {
+                            audio.pause();
+                            index = 0;
+                            loadTrack(index);
+                        }
+                    }).get(0),
+                    btnPrev = $('#btnPrev').on('click', function () {
+                        if ((index - 1) > -1) {
+                            index--;
+                            loadTrack(index);
+                            if (playing) {
+                                audio.play();
+                            }
+                        } else {
+                            audio.pause();
+                            index = 0;
+                            loadTrack(index);
+                        }
+                    }),
+                    btnNext = $('#btnNext').on('click', function () {
+                        if ((index + 1) < trackCount) {
+                            index++;
+                            loadTrack(index);
+                            if (playing) {
+                                audio.play();
+                            }
+                        } else {
+                            index = 0;
+                            loadTrack(index);
+                            audio.play();
+                        }
+                    }),
+                    li = $('#plList li').on('click', function () {
+                        var id = parseInt($(this).index());
+                        if (id !== index) {
+                            playTrack(id);
+                        }
+                    }),
+                    qrLi = $('#qrList li').on('click', function () {
+                        var id = parseInt($(this).index());
+                        qari = qaris[id].name;
+                        mediaPath = 'https://download.quranicaudio.com/quran/' + qari + '/';
+                        playTrack(index);
+                    }),
+                    loadTrack = function (id) {
+                        $('.plSel').removeClass('plSel');
+                        $('#plList li:eq(' + id + ')').addClass('plSel');
+                        npTitle.text(tracks[id].name);
+                        index = id;
+                        audio.src = mediaPath + tracks[id].file + extension;
+                    },
+                    playTrack = function (id) {
+                        loadTrack(id);
+                        audio.play();
+                    };
+                extension = audio.canPlayType('audio/mpeg') ? '.mp3' : audio.canPlayType('audio/ogg') ? '.ogg' : '';
+                loadTrack(index);
+            }
+
+            // handle hamburger menu evts
+            $('#nav-icon2').click(function() {
+                $(this).toggleClass('open');
+                $('.litebox').toggleClass("opened");
+                $('body').toggleClass("noscroll");
+            }); // hamburger end
+
+            // initialize plyr
+            plyr.setup($('#audio1'), {});
+
+
+        });
+
+
+    </script>
+</head>
+
+<body translate="no" >
+
+<!-- Hamburger Menu: Button //-->
+<div style="position:absolute;
+            right: 0; top: -15px;transform: scale(.45);
+            z-index: 99" id="nav-icon2">
+    <span></span><span></span>
+    <span></span><span></span>
+    <span></span><span></span>
+</div>
+
+<!-- Overlay (Litebox) //-->
+<div class="litebox">
+    <div class="title">Select Qari</div>
+
+    <ul id="qrList">
+        <li class="plSel">
+            <div class="plItem">
+                <span class="plNum">01.</span>
+                <span class="plTitle">Abdur-Rahman as-Sudais</span>
+                <span class="plLength"></span></div>
+        </li>
+        <li>
+            <div class="plItem"><span class="plNum">02.</span>
+                <span class="plTitle">Sa`ud ash-Shuraym</span>
+                <span class="plLength"></span></div>
+        </li>
+    </ul>
+</div>
+
+<div class="container">
+    <div class="column add-bottom">
+        <div id="mainwrap">
+            <div id="nowPlay">
+                <span class="left" id="npAction">Paused...</span>
+                <span class="right" id="npTitle"></span>
+            </div>
+            <div id="audiowrap">
+                <div id="audio0">
+                    <audio preload id="audio1" controls="controls">Your browser does not support HTML5 Audio!</audio>
+                </div>
+                <div id="tracks">
+                    <a id="btnPrev"><</a>
+                    <a id="btnNext">>
+                        <!--<img src='https://image.flaticon.com/icons/svg/109/109432.svg'>//-->
+                    </a>
+                </div>
+            </div>
+            <div id="plwrap">
+                <ul id="plList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="column add-bottom center">
+        <p>Experiment by <a href="javascript:void(0)">Hamzeen</a></p>
+    </div>
+
+</div>
+
+</body>
+</html>
+ 
